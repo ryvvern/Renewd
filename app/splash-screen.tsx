@@ -74,7 +74,7 @@ export function SplashScreen() {
       role="presentation"
       aria-hidden="true"
       data-slot="splash-screen"
-      className="fixed inset-0 z-[999] flex items-center justify-center bg-[#0a0a0a] transition-[opacity,transform] ease-out"
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-[#111111] transition-[opacity,transform] ease-out"
       style={{
         transitionDuration: `${EXIT_MS}ms`,
         opacity: phase === "exiting" ? 0 : 1,

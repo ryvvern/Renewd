@@ -19,6 +19,22 @@ import type { SuccessAction } from "./success-overlay";
 
 type BillingCycle = "monthly" | "yearly";
 
+const PAST_DATE_WARNING_THRESHOLD_DAYS = 3;
+
+function isMeaningfullyInThePast(isoDate: string, today: Date = new Date()) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const dateTimestamp = Date.UTC(year, month - 1, day);
+  const todayTimestamp = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const daysInPast = Math.round(
+    (todayTimestamp - dateTimestamp) / (24 * 60 * 60 * 1000),
+  );
+  return daysInPast > PAST_DATE_WARNING_THRESHOLD_DAYS;
+}
+
 export type EditableSubscription = {
   id: string;
   name: string | null;
@@ -73,6 +89,9 @@ function SubscriptionForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const showPastDateWarning =
+    !!nextRenewalDate && isMeaningfullyInThePast(nextRenewalDate);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -234,6 +253,12 @@ function SubscriptionForm({
             onChange={(event) => setNextRenewalDate(event.target.value)}
             className="h-10 border-white/10 bg-black/40"
           />
+          {showPastDateWarning ? (
+            <p className="text-xs text-amber-400/80">
+              This date is in the past — it&apos;ll be rolled forward
+              automatically. Double-check if that wasn&apos;t intended.
+            </p>
+          ) : null}
         </div>
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         <DialogFooter className="-mx-0 -mb-0 mt-1 border-none bg-transparent p-0 sm:justify-end">
@@ -379,7 +404,7 @@ export function SubscriptionDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="dark gap-5 border-none bg-[#161616] p-5 text-foreground sm:max-w-[420px]">
+      <DialogContent className="dark gap-5 border-none bg-popover p-5 text-foreground sm:max-w-[420px]">
         {open ? (
           view === "delete" && subscription ? (
             <DeleteConfirmation

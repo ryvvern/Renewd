@@ -1,17 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CheckIcon, ListFilterIcon, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getUrgencyLevel, isDueSoon } from "@/lib/subscriptions/urgency";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { SubscriptionDialog } from "./subscription-dialog";
 import { SuccessOverlay, type SuccessAction } from "./success-overlay";
 
@@ -140,10 +134,11 @@ export function SubscriptionList({
     { key: "monthly", label: "Monthly" },
     { key: "annual", label: "Annual" },
   ];
-  const overflowChips = chips.filter(
-    (chip) => chip.key === "monthly" || chip.key === "annual",
-  );
-  const isOverflowFilterActive = filter === "monthly" || filter === "annual";
+  const mobileSegments: { key: FilterKey; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "monthly", label: "Monthly" },
+    { key: "annual", label: "Yearly" },
+  ];
 
   const isEmpty = subscriptions.length === 0;
 
@@ -211,53 +206,26 @@ export function SubscriptionList({
             {chips.map(renderChip)}
           </div>
 
-          {/* Mobile: All + Due soon, plus a dropdown for Monthly/Annual */}
-          <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto pb-1 sm:hidden">
-            {chips
-              .filter((chip) => chip.key === "all" || chip.key === "due-soon")
-              .map(renderChip)}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label="More filters"
-                    className={cn(
-                      "relative flex size-7 shrink-0 items-center justify-center rounded-full border transition-colors",
-                      isOverflowFilterActive
-                        ? "border-transparent bg-[var(--accent-pink)] text-black"
-                        : "border-white/15 bg-transparent text-muted-foreground hover:text-foreground",
-                    )}
-                  />
-                }
-              >
-                <ListFilterIcon className="size-3.5" />
-                {isOverflowFilterActive && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-[var(--accent-pink)] ring-2 ring-background"
-                  />
-                )}
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {overflowChips.map((chip) => {
-                  const isActive = filter === chip.key;
-                  return (
-                    <DropdownMenuItem
-                      key={chip.key}
-                      onClick={() => setFilter(chip.key)}
-                      className="justify-between"
-                    >
-                      <span>
-                        {chip.label} ·{" "}
-                        <span className="font-mono">{counts[chip.key]}</span>
-                      </span>
-                      {isActive && <CheckIcon className="size-3.5" />}
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          {/* Mobile: segmented control (All / Monthly / Yearly) */}
+          <div className="flex rounded-full bg-white/5 p-1 sm:hidden">
+            {mobileSegments.map((segment) => {
+              const isActive = filter === segment.key;
+              return (
+                <button
+                  key={segment.key}
+                  type="button"
+                  onClick={() => setFilter(segment.key)}
+                  className={cn(
+                    "flex-1 rounded-full py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-[var(--accent-pink)] text-black"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {segment.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Desktop column headers */}
@@ -274,12 +242,12 @@ export function SubscriptionList({
               <li
                 key={subscription.id}
                 onClick={() => setEditingSubscription(subscription)}
-                className="grid cursor-pointer grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-white/10 py-3 text-sm transition-colors hover:bg-white/5 sm:grid-cols-[1fr_auto_auto_auto_auto] sm:gap-6"
+                className="grid cursor-pointer grid-cols-[1fr_auto] items-center gap-3 border-b border-white/10 py-3 text-sm transition-colors hover:bg-white/5 sm:grid-cols-[1fr_auto_auto_auto_auto] sm:gap-6"
               >
                 <span className="truncate text-foreground">
                   {subscription.name}
                 </span>
-                <span className="text-right font-mono text-foreground tabular-nums">
+                <span className="text-right font-mono font-semibold text-foreground tabular-nums sm:font-normal">
                   {formatCost(subscription.cost)}
                 </span>
                 <span className="hidden w-20 text-right text-muted-foreground sm:block">
@@ -288,7 +256,7 @@ export function SubscriptionList({
                 <span className="hidden w-14 text-right text-muted-foreground tabular-nums sm:block">
                   {formatShortDate(subscription.next_renewal_date)}
                 </span>
-                <span className="flex w-4 justify-end">
+                <span className="hidden w-4 justify-end sm:flex">
                   <UrgencyDot
                     nextRenewalDate={subscription.next_renewal_date}
                   />

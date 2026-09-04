@@ -5,7 +5,7 @@ type SpendInput = {
   billing_cycle: BillingCycle | null;
 };
 
-function toMonthlyEquivalent({ cost, billing_cycle }: SpendInput): number {
+export function toMonthlyEquivalent({ cost, billing_cycle }: SpendInput): number {
   if (cost === null) {
     return 0;
   }

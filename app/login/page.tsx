@@ -2,6 +2,7 @@
 
 import { Suspense, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ function AuthForm({ initialMode }: { initialMode: Mode }) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,6 +26,9 @@ function AuthForm({ initialMode }: { initialMode: Mode }) {
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
     setError(null);
+    setEmail("");
+    setPassword("");
+    setIsPasswordVisible(false);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -53,7 +58,7 @@ function AuthForm({ initialMode }: { initialMode: Mode }) {
           Renewd
         </p>
 
-        <div className="flex rounded-xl border border-white/10 bg-[#161616] p-1">
+        <div className="flex rounded-xl border border-white/10 bg-[#151515] p-1">
           <button
             type="button"
             onClick={() => switchMode("login")}
@@ -106,15 +111,31 @@ function AuthForm({ initialMode }: { initialMode: Mode }) {
             >
               Password
             </Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="h-10 rounded-lg border-white/10 bg-black/40 px-3 text-sm"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={isPasswordVisible ? "text" : "password"}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="h-10 rounded-lg border-white/10 bg-black/40 px-3 pr-10 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setIsPasswordVisible((visible) => !visible)}
+                aria-label={
+                  isPasswordVisible ? "Hide password" : "Show password"
+                }
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition-colors hover:text-[var(--accent-pink)]"
+              >
+                {isPasswordVisible ? (
+                  <EyeOffIcon className="size-4" />
+                ) : (
+                  <EyeIcon className="size-4" />
+                )}
+              </button>
+            </div>
           </div>
           {error ? (
             <p className="text-sm text-destructive">{error}</p>

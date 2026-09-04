@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { SubscriptionDialog } from "./subscription-dialog";
 import { SuccessOverlay, type SuccessAction } from "./success-overlay";
 
@@ -16,16 +13,13 @@ export function AddSubscription() {
 
   return (
     <>
-      <Button
+      <button
+        type="button"
         onClick={() => setOpen(true)}
-        className={cn(
-          "gap-1 rounded-full border-transparent bg-[var(--accent-pink)] px-4 text-black hover:bg-[var(--accent-pink)]/85 sm:px-3",
-        )}
+        className="text-base font-semibold text-[var(--accent-pink)] transition-opacity hover:opacity-80"
       >
-        <PlusIcon />
-        <span className="hidden sm:inline">Add</span>
-        <span className="sr-only sm:hidden">Add subscription</span>
-      </Button>
+        + Add
+      </button>
       <SubscriptionDialog
         open={open}
         onOpenChange={setOpen}
